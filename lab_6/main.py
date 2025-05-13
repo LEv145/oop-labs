@@ -1,56 +1,34 @@
-from abc import ABC, abstractmethod
+from memento import KeyboardStateSaver
+from keyboard import Keyboard
+from commands import ABCCommand, CharPrintCommand, VolumeUpCommand, VolumeDownCommand, MediaPlayerCommand
 
 
-class ABCCommand(ABC):
-    def do(self) -> None:
-        pass
+def main() -> None:
+    supported_commands: list[ABCCommand] = [
+        CharPrintCommand(char="a"),
+        VolumeUpCommand(),
+        VolumeDownCommand(),
+        MediaPlayerCommand(),
+    ]
+    saver = KeyboardStateSaver("keyboard_state.json")
 
-    def undo(self) -> None:
-        pass
+    print("== Конфигурация ==")
+    keyboard = Keyboard(saver=saver, supported_commands=supported_commands)
+    keyboard.add_hotkey("CTRL+A", "volume_up")
+    keyboard.add_hotkey("CTRL+Z", "volume_down")
+    keyboard.add_hotkey("A", "char_print_a")
+    keyboard.add_hotkey("B", "char_print_a")
+    keyboard.undo_add_hotkey()
 
-
-class CharPrintCommand(ABCCommand):
-    def __init__(self, char: str) -> None:
-        self.char = char
-
-    def do(self) -> None:
-        print(self.char, end="")
-
-    def undo(self) -> None:
-        print(f"\r{self.char}", end="")
-
-
-class VolumeUpCommand(ABCCommand):
-    def __init__(self) -> None:
-        self.volume = 50
-
-    def do(self) -> None:
-        self.volume = min(100, self.volume + 20)
-
-    def undo(self) -> None:
-        self.volume = max(0, self.volume - 20)
+    print("== Тестирование ==")
+    keyboard.do("A")
+    keyboard.do("A")
+    keyboard.undo()
+    keyboard.do("CTRL+A")
+    keyboard.do("CTRL+Z")
+    keyboard.undo()
+    keyboard.redo()
 
 
-
-class VolumeDownCommand(ABCCommand):
-    def __init__(self) -> None:
-        self.volume = 50
-
-    def do(self) -> None:
-        self.volume = max(0, self.volume - 20)
-
-    def undo(self) -> None:
-        self.volume = min(100, self.volume + 20)
-
-
-class MediaPlayerCommand(ABCCommand):
-    def __init__(self) -> None:
-        self.player_on = False
-
-    def do(self) -> None:
-        if not self.player_on:
-            self.player_on = True
-
-    def undo(self) -> None:
-        if self.player_on:
-            self.player_on = False
+if __name__ == "__main__":
+    main()

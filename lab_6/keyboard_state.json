@@ -1,0 +1,5 @@
+{
+    "CTRL+A": "volume_up",
+    "CTRL+Z": "volume_down",
+    "A": "char_print_a"
+}
